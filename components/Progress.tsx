@@ -137,7 +137,7 @@ export const Progress: React.FC<ProgressProps> = ({ user, history, workouts }) =
               <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
-                formatter={(value: number) => [`${value}g`, 'Proteína']}
+                formatter={(value: any) => [`${value}g`, 'Proteína']}
               />
               {/* Reference line for Goal */}
               <ReferenceLine y={proteinGoal} stroke="#eab308" strokeDasharray="3 3" label={{ position: 'top',  value: `Meta: ${proteinGoal}g`, fill: '#eab308', fontSize: 10 }} />
@@ -163,7 +163,7 @@ export const Progress: React.FC<ProgressProps> = ({ user, history, workouts }) =
                         <Tooltip 
                             contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
                             itemStyle={{ color: '#a855f7' }}
-                            formatter={(value: number) => [`${value} Toneladas`, 'Volume']}
+                            formatter={(value: any) => [`${value} Toneladas`, 'Volume']}
                         />
                         <Bar dataKey="volume" fill="#a855f7" radius={[4, 4, 0, 0]} />
                     </BarChart>
