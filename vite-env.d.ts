@@ -1,5 +1,5 @@
-// /// <reference types="vite/client" />
-// /// <reference types="vite-plugin-pwa/client" />
+/// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
 
 declare module 'virtual:pwa-register/react' {
   import type { Dispatch, SetStateAction } from 'react';
@@ -19,9 +19,8 @@ declare module 'virtual:pwa-register/react' {
   };
 }
 
-declare var process: {
-  env: {
+declare namespace NodeJS {
+  interface ProcessEnv {
     API_KEY: string;
-    [key: string]: string | undefined;
-  };
-};
+  }
+}

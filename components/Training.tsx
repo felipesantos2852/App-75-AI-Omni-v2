@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { WorkoutRoutine, Exercise, DailyLog } from '../types';
-import { getAlternativeExercise, suggestNewExercise, generateExerciseIllustration } from '../services/geminiService';
+import { getAlternativeExercise, suggestNewExercise } from '../services/geminiService';
 import { EXERCISE_DB } from '../constants';
 import { 
-  Play, Settings, Save, Clock, RefreshCw, Info, CheckCircle, 
-  ChevronDown, ChevronUp, BicepsFlexed, Footprints, Target, 
-  Dumbbell, Loader2, Replace, List, Plus, Sparkles, StickyNote, ImageIcon, Check
+  Clock, RefreshCw, Info, CheckCircle, 
+  ChevronUp, BicepsFlexed, Footprints, Target, 
+  Dumbbell, Loader2, Replace, List, Plus, Sparkles, StickyNote, Save, Settings
 } from 'lucide-react';
 
 interface TrainingProps {
@@ -32,7 +32,6 @@ export const Training: React.FC<TrainingProps> = ({ workouts, onUpdateWorkout, d
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [swappingId, setSwappingId] = useState<string | null>(null);
-  const [generatingImageId, setGeneratingImageId] = useState<string | null>(null);
   const [showSaveFeedback, setShowSaveFeedback] = useState(false);
   
   // Adding New Exercise State
@@ -67,16 +66,6 @@ export const Training: React.FC<TrainingProps> = ({ workouts, onUpdateWorkout, d
 
   const toggleInfo = (id: string) => {
     setExpandedExerciseId(expandedExerciseId === id ? null : id);
-  };
-
-  const handleGenerateImage = async (exercise: Exercise) => {
-    setGeneratingImageId(exercise.id);
-    const imageUrl = await generateExerciseIllustration(exercise.name);
-    
-    if (imageUrl) {
-        updateExercise(exercise.id, { gifUrl: imageUrl });
-    }
-    setGeneratingImageId(null);
   };
 
   const handleSwapExerciseAI = async (exercise: Exercise) => {
@@ -250,16 +239,6 @@ export const Training: React.FC<TrainingProps> = ({ workouts, onUpdateWorkout, d
                  <h3 className="text-lg font-bold text-white max-w-[60%] leading-tight drop-shadow-md">{ex.name}</h3>
                  
                  <div className="flex gap-2">
-                    {/* Generate Image Button */}
-                   <button 
-                    onClick={(e) => { e.stopPropagation(); handleGenerateImage(ex); }}
-                    disabled={generatingImageId === ex.id}
-                    className="bg-gray-800/80 p-2 rounded-full text-purple-400 hover:text-purple-300 hover:bg-gray-700 backdrop-blur-sm border border-white/5 transition-all"
-                    title="Gerar Visual (IA)"
-                   >
-                     {generatingImageId === ex.id ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={18} />}
-                   </button>
-
                    {/* Swap Button AI */}
                    <button 
                     onClick={(e) => { e.stopPropagation(); handleSwapExerciseAI(ex); }}
@@ -514,7 +493,7 @@ export const Training: React.FC<TrainingProps> = ({ workouts, onUpdateWorkout, d
       {/* Save Feedback Toast */}
       {showSaveFeedback && (
         <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-green-900/90 text-green-200 px-4 py-2 rounded-full border border-green-700 shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top-4">
-             <Check size={16} />
+             <CheckCircle size={16} />
              <span className="text-sm font-bold">Alterações Salvas</span>
         </div>
       )}

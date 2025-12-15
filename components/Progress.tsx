@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, BarChart, Bar, ReferenceLine } from 'recharts';
 import { UserProfile, DailyLog, WorkoutRoutine } from '../types';
-import { Dumbbell, Activity, Utensils } from 'lucide-react';
+import { Dumbbell, Activity, Utensils, Droplet, FlaskConical } from 'lucide-react';
 
 interface ProgressProps {
   user: UserProfile;
@@ -28,10 +28,12 @@ export const Progress: React.FC<ProgressProps> = ({ user, history, workouts }) =
     name: new Date(log.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
     weight: log.weight || user.currentWeight,
     protein: log.meals.reduce((sum, m) => sum + m.macros.protein, 0),
+    water: log.waterIntake || 0,
+    creatine: log.creatineAmount || 0,
     goal: proteinGoal
   })).slice(-14) : [
-    { name: 'Início', weight: 68, protein: 140, goal: proteinGoal },
-    { name: 'Hoje', weight: user.currentWeight, protein: 155, goal: proteinGoal }
+    { name: 'Início', weight: 68, protein: 140, water: 0, creatine: 0, goal: proteinGoal },
+    { name: 'Hoje', weight: user.currentWeight, protein: 155, water: 0, creatine: 0, goal: proteinGoal }
   ];
 
   // --- 2. Specific Exercise Load Data ---
@@ -145,6 +147,55 @@ export const Progress: React.FC<ProgressProps> = ({ user, history, workouts }) =
               <Area type="monotone" dataKey="protein" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorProt)" />
             </AreaChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Hydration & Supplementation (NEW) */}
+      <div className="grid grid-cols-1 gap-4">
+        {/* Hydration */}
+        <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+            <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+                <Droplet size={14} className="text-blue-400"/> Histórico Hidratação (ml)
+            </h3>
+            <div className="h-40 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={nutritionData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                        <XAxis dataKey="name" stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip 
+                            contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
+                            itemStyle={{ color: '#60a5fa' }}
+                            formatter={(value: any) => [`${value}ml`, 'Água']}
+                        />
+                        <ReferenceLine y={3000} stroke="#3b82f6" strokeDasharray="3 3" />
+                        <Bar dataKey="water" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+
+        {/* Creatine */}
+        <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
+            <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+                <FlaskConical size={14} className="text-purple-400"/> Histórico Creatina (g)
+            </h3>
+            <div className="h-40 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={nutritionData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                        <XAxis dataKey="name" stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
+                        <Tooltip 
+                            contentStyle={{ backgroundColor: '#171717', border: '1px solid #333', borderRadius: '8px' }}
+                            itemStyle={{ color: '#a855f7' }}
+                            formatter={(value: any) => [`${value}g`, 'Creatina']}
+                        />
+                        <ReferenceLine y={5} stroke="#a855f7" strokeDasharray="3 3" />
+                        <Bar dataKey="creatine" fill="#a855f7" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
         </div>
       </div>
 

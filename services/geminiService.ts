@@ -129,52 +129,6 @@ export const suggestNewExercise = async (routineName: string, existingExercises:
   }
 };
 
-export const generateExerciseIllustration = async (exerciseName: string): Promise<string | null> => {
-  const prompt = `Minimalist vector line art illustration of the gym exercise: "${exerciseName}". 
-  Style: White lines on a solid black background. High contrast. Technical drawing. 
-  Focus on correct biomechanics and form. No text, no shading.`;
-
-  try {
-    // Attempt 1: Use Imagen 3.0 (Best for Image Generation)
-    const response = await ai.models.generateImages({
-      model: 'imagen-3.0-generate-001',
-      prompt: prompt,
-      config: {
-        numberOfImages: 1,
-        aspectRatio: '16:9',
-        outputMimeType: 'image/jpeg'
-      }
-    });
-
-    const base64 = response.generatedImages?.[0]?.image?.imageBytes;
-    if (base64) {
-      return `data:image/jpeg;base64,${base64}`;
-    }
-  } catch (error) {
-    console.error("Imagen Error (trying fallback):", error);
-  }
-
-  try {
-    // Attempt 2: Fallback to Gemini 2.5 Flash Image (Multimodal)
-    const fallbackResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: { 
-          parts: [{ text: `Generate an image. ${prompt}` }] 
-      }
-    });
-
-    for (const part of fallbackResponse.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-      }
-    }
-  } catch (error) {
-    console.error("Gemini Flash Image Error:", error);
-  }
-
-  return null;
-};
-
 export const chatWithCoach = async (
   message: string, 
   history: { role: string, parts: { text: string }[] }[],
