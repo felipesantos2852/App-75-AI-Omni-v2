@@ -11,60 +11,108 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange }) => {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      setInstallPrompt(e);
-      // Update UI notify the user they can install the PWA
-      setShowInstallBanner(true);
-    };
+    try {
+        // Safe check for Standalone mode
+        const isInStandalone = 
+            (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || 
+            ((window.navigator as any).standalone === true);
+        
+        if (isInStandalone) {
+            setIsStandalone(true);
+        }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        // Safe check for iOS
+        if (typeof navigator !== 'undefined') {
+             const userAgent = navigator.userAgent || '';
+             const isIosDevice = /iPad|iPhone|iPod/.test(userAgent) || 
+                                (userAgent.includes("Mac") && "ontouchend" in document);
+             setIsIOS(!!isIosDevice);
+        }
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
+        const handleBeforeInstallPrompt = (e: any) => {
+            e.preventDefault();
+            setInstallPrompt(e);
+            setShowInstallBanner(true);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        // Fallback timer for iOS or if event doesn't fire but not installed
+        const timer = setTimeout(() => {
+            if (!isInStandalone && !installPrompt && !showInstallBanner) {
+                // Show banner if we think we can install but haven't been prompted
+                setShowInstallBanner(true);
+            }
+        }, 4000);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            clearTimeout(timer);
+        };
+    } catch (err) {
+        console.error("PWA Detection Error:", err);
+    }
+  }, [installPrompt, showInstallBanner]);
 
   const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    
-    // Show the install prompt
-    installPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await installPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      setInstallPrompt(null);
-      setShowInstallBanner(false);
+    if (installPrompt) {
+        try {
+            installPrompt.prompt();
+            const { outcome } = await installPrompt.userChoice;
+            if (outcome === 'accepted') {
+                setInstallPrompt(null);
+                setShowInstallBanner(false);
+            }
+        } catch (e) {
+            console.error("Install prompt failed", e);
+        }
+    } else {
+        alert(isIOS 
+            ? "Para instalar no iPhone/iPad:\n1. Toque no botão Compartilhar (Share)\n2. Selecione 'Adicionar à Tela de Início'"
+            : "Para instalar:\n1. Toque no menu do navegador (3 pontinhos)\n2. Selecione 'Instalar aplicativo' ou 'Adicionar à tela inicial'"
+        );
+        setShowInstallBanner(false); // Hide after showing instructions
     }
   };
+
+  if (isStandalone) {
+      return (
+        <div className="min-h-screen bg-gray-950 text-gray-200 flex flex-col font-sans">
+            <main className="flex-1 pb-24 px-4 pt-6 max-w-md mx-auto w-full">
+                {children}
+            </main>
+            <NavBar activeTab={activeTab} onTabChange={onTabChange} />
+        </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-200 flex flex-col font-sans">
       
       {/* PWA Install Banner */}
-      {showInstallBanner && (
-        <div className="bg-yellow-500 text-black px-4 py-3 flex justify-between items-center shadow-lg animate-in fade-in slide-in-from-top-5">
+      {showInstallBanner && !isStandalone && (
+        <div className="bg-yellow-500 text-black px-4 py-3 flex justify-between items-center shadow-lg animate-in fade-in slide-in-from-top-5 sticky top-0 z-50">
            <div className="flex items-center gap-3">
               <div className="bg-black/10 p-2 rounded-lg">
                 <Download size={20} />
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-sm">Instalar App</span>
-                <span className="text-xs opacity-80">Acesso rápido e offline</span>
+                <span className="text-xs opacity-80">
+                    {installPrompt ? "Acesso rápido e offline" : "Adicionar à Tela de Início"}
+                </span>
               </div>
            </div>
            <div className="flex items-center gap-2">
               <button 
                 onClick={handleInstallClick}
-                className="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold"
+                className="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap"
               >
-                Instalar
+                {installPrompt ? "Instalar" : "Instalar"}
               </button>
               <button 
                 onClick={() => setShowInstallBanner(false)}
@@ -80,7 +128,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
         {children}
       </main>
       
-      <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 pb-safe z-50">
+      <NavBar activeTab={activeTab} onTabChange={onTabChange} />
+    </div>
+  );
+};
+
+const NavBar: React.FC<{ activeTab: Tab; onTabChange: (t: Tab) => void }> = ({ activeTab, onTabChange }) => (
+    <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 pb-safe z-50">
         <div className="flex justify-around items-center h-16 max-w-md mx-auto">
           <NavButton 
             active={activeTab === 'dashboard'} 
@@ -108,9 +162,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
           />
         </div>
       </nav>
-    </div>
-  );
-};
+);
 
 const NavButton: React.FC<{ active: boolean; onClick: () => void; icon: React.ReactNode; label: string }> = ({
   active, onClick, icon, label

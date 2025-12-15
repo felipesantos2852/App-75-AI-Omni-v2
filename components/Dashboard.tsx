@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, DailyLog, FoodItem } from '../types';
 import { analyzeNutrition } from '../services/geminiService';
-import { Droplet, Plus, Loader2, Scale, Minus, FlaskConical, Trash2, Edit2, Utensils, Target } from 'lucide-react';
+import { Droplet, Plus, Loader2, Scale, Minus, FlaskConical, Trash2, Edit2, Utensils, Target, Save } from 'lucide-react';
 import { DAILY_WATER_GOAL } from '../constants';
 
 interface DashboardProps {
@@ -236,33 +236,42 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, log, onUpdateLog, on
                     </button>
                 </div>
             ) : (
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-3 p-2 bg-gray-950/50 rounded-xl border border-gray-800">
                     <input 
                         type="text"
                         value={manualFood.name}
                         onChange={(e) => setManualFood({...manualFood, name: e.target.value})}
-                        placeholder='Alimento'
-                        className="flex-[2] bg-gray-950 border border-gray-800 text-white px-3 py-3 rounded-xl focus:outline-none focus:border-yellow-500"
+                        placeholder='Nome do Alimento'
+                        className="w-full bg-gray-900 border border-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-yellow-500"
                     />
-                    <input 
-                        type="number"
-                        value={manualFood.cals}
-                        onChange={(e) => setManualFood({...manualFood, cals: e.target.value})}
-                        placeholder='Kcal'
-                        className="flex-1 bg-gray-950 border border-gray-800 text-white px-2 py-3 rounded-xl focus:outline-none focus:border-yellow-500 text-center"
-                    />
-                     <input 
-                        type="number"
-                        value={manualFood.protein}
-                        onChange={(e) => setManualFood({...manualFood, protein: e.target.value})}
-                        placeholder='Prot(g)'
-                        className="flex-1 bg-gray-950 border border-gray-800 text-white px-2 py-3 rounded-xl focus:outline-none focus:border-yellow-500 text-center"
-                    />
+                    <div className="flex gap-3">
+                        <div className="flex-1">
+                            <label className="text-[10px] text-gray-500 uppercase font-bold ml-1 mb-1 block">Calorias</label>
+                            <input 
+                                type="number"
+                                value={manualFood.cals}
+                                onChange={(e) => setManualFood({...manualFood, cals: e.target.value})}
+                                placeholder='0'
+                                className="w-full bg-gray-900 border border-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-yellow-500 text-center"
+                            />
+                        </div>
+                        <div className="flex-1">
+                             <label className="text-[10px] text-gray-500 uppercase font-bold ml-1 mb-1 block">Proteína (g)</label>
+                             <input 
+                                type="number"
+                                value={manualFood.protein}
+                                onChange={(e) => setManualFood({...manualFood, protein: e.target.value})}
+                                placeholder='0'
+                                className="w-full bg-gray-900 border border-gray-800 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-yellow-500 text-center"
+                            />
+                        </div>
+                    </div>
                     <button 
                         onClick={handleManualAdd}
-                        className="bg-yellow-500 text-black px-3 rounded-xl font-bold flex items-center justify-center"
+                        className="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-yellow-400 transition-colors"
                     >
-                        <Plus size={18} />
+                        <Save size={18} />
+                        Adicionar ao Diário
                     </button>
                 </div>
             )}

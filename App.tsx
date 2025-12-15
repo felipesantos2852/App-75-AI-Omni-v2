@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import { 
   UserProfile, 
   WorkoutRoutine, 
@@ -12,8 +13,22 @@ import { Training } from './components/Training';
 import { Coach } from './components/Coach';
 import { Progress } from './components/Progress';
 import { DEFAULT_WORKOUTS, INITIAL_WEIGHT, TARGET_WEIGHT } from './constants';
+import { RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
+  // --- PWA Service Worker Registration ---
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log('SW Registered: ' + r);
+    },
+    onRegisterError(error) {
+      console.log('SW registration error', error);
+    },
+  });
+
   // --- State Initialization ---
   
   // 1. User Profile
@@ -119,6 +134,19 @@ const App: React.FC = () => {
 
   return (
     <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+      {/* Update Prompt for PWA */}
+      {needRefresh && (
+        <div className="fixed top-0 left-0 right-0 z-[100] p-4 flex justify-center">
+            <button 
+                onClick={() => updateServiceWorker(true)}
+                className="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 animate-bounce"
+            >
+                <RefreshCw size={18} />
+                Nova versão disponível. Atualizar?
+            </button>
+        </div>
+      )}
+
       {activeTab === 'dashboard' && (
         <Dashboard 
           user={user} 

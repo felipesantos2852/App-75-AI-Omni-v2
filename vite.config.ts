@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        includeAssets: ['icon.svg'],
         manifest: {
           name: 'Project 75 AI Omni',
           short_name: 'P75 Omni',
@@ -20,17 +20,14 @@ export default defineConfig(({ mode }) => {
           background_color: '#0a0a0a',
           display: 'standalone',
           orientation: 'portrait',
+          scope: '/',
           start_url: '/',
           icons: [
             {
-              src: 'pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png'
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png'
+              src: 'icon.svg',
+              sizes: '192x192 512x512',
+              type: 'image/svg+xml',
+              purpose: 'any maskable'
             }
           ]
         }
